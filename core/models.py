@@ -47,6 +47,19 @@ class MemorySource(models.TextChoices):
     USER = "user", "User"
 
 
+class DigestStatus(models.TextChoices):
+    DRAFT = "draft", "Draft"
+    DELIVERED = "delivered", "Delivered"
+    ARCHIVED = "archived", "Archived"
+
+
+class AgentType(models.TextChoices):
+    GENERAL = "general", "General"
+    SCHEDULER = "scheduler", "Scheduler"
+    TASK = "task", "Task"
+    MEMORY = "memory", "Memory"
+
+
 class UserProfile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     timezone = models.CharField(max_length=64, default="UTC")
@@ -175,3 +188,37 @@ class ExternalCalendar(models.Model):
 
     def __str__(self) -> str:
         return f"{self.provider}: {self.calendar_id}"
+
+
+class OnboardingState(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    current_step = models.CharField(max_length=64, default="scheduling_mode")
+    category_seeded = models.BooleanField(default=False)
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self) -> str:
+        return f"Onboarding for {self.user}"
+
+
+class PreferenceDigest(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    week_start = models.DateField()
+    status = models.CharField(max_length=16, choices=DigestStatus.choices, default=DigestStatus.DRAFT)
+    items = models.JSONField(default=list)
+    generated_at = models.DateTimeField(auto_now_add=True)
+    delivered_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self) -> str:
+        return f"Preference digest {self.week_start} ({self.status})"
+
+
+class AgentProfile(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    agent_type = models.CharField(max_length=16, choices=AgentType.choices)
+    system_prompt = models.TextField()
+    enabled = models.BooleanField(default=True)
+    metadata = models.JSONField(default=dict, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self) -> str:
+        return f"{self.agent_type} agent for {self.user}"

@@ -46,3 +46,18 @@ class MemoryFactAdmin(admin.ModelAdmin):
 @admin.register(models.ExternalCalendar)
 class ExternalCalendarAdmin(admin.ModelAdmin):
     list_display = ("provider", "calendar_id", "user", "last_synced_at")
+
+
+@admin.register(models.OnboardingState)
+class OnboardingStateAdmin(admin.ModelAdmin):
+    list_display = ("user", "current_step", "category_seeded", "completed_at")
+
+
+@admin.register(models.PreferenceDigest)
+class PreferenceDigestAdmin(admin.ModelAdmin):
+    list_display = ("user", "week_start", "status", "generated_at", "delivered_at")
+
+
+@admin.register(models.AgentProfile)
+class AgentProfileAdmin(admin.ModelAdmin):
+    list_display = ("user", "agent_type", "enabled", "updated_at")
